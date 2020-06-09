@@ -1,4 +1,0 @@
-server name:imt563-group2
-imt563-group2.database.windows.net
-server admin log: group2-teammates
-password: SuperSafePassword1234
