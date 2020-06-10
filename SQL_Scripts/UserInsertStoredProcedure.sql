@@ -1,19 +1,18 @@
 --insert user data stored procedure
 --to secure user password, we add a randomly generated unique string for the password encryption
+
 ALTER TABLE dbo.Users ADD Salt UNIQUEIDENTIFIER 
 GO
 
-ALTER PROCEDURE dbo.uspAddUser
-    @pUserName VARCHAR(20), 
-    @pPassword VARCHAR(18),
-    @pFirstName VARCHAR(20), 
-    @pLastName VARCHAR(20),
+CREATE PROCEDURE dbo.uspAddUser
+    @pUserName NVARCHAR(40), 
+    @pPassword NVARCHAR(36),
+    @pFirstName NVARCHAR(40), 
+    @pLastName NVARCHAR(40),
 	@pDateOfBirth DATE = NULL,
-	@pEmailAddress VARCHAR(100),
-	@pPhoneNumber VARCHAR(20) = NULL,
-	@pCreatedDate DATETIME,
-	@pCreatedBy VARCHAR(100),
-    @responseMessage VARCHAR(250) OUTPUT
+	@pEmailAddress NVARCHAR(200),
+	@pPhoneNumber NVARCHAR(40) = NULL,
+    @responseMessage NVARCHAR(250) OUTPUT
 AS
 BEGIN
     SET NOCOUNT ON
@@ -33,7 +32,7 @@ BEGIN
 
 END
 
---
+--procedure for user login
 CREATE PROCEDURE dbo.uspLogin
     @pUserName VARCHAR(20),
     @pPassword VARCHAR(18),
@@ -47,7 +46,7 @@ BEGIN
 
     IF EXISTS (SELECT TOP 1 UserID FROM [dbo].[Users] WHERE UserName=@pUserName)
     BEGIN
-        SET @userID=(SELECT UserID FROM [dbo].[Users] WHERE UserName=@pUserName AND PasswordHash=HASHBYTES('SHA2_512', @pPassword+CAST(Salt AS NVARCHAR(36))))
+        SET @userID=(SELECT UserID FROM [dbo].[Users] WHERE UserName=@pUserName AND Password=HASHBYTES('SHA2_512', @pPassword+CAST(Salt AS NVARCHAR(36))))
 
         IF(@userID IS NULL)
             SET @responseMessage='Incorrect password'
@@ -58,3 +57,12 @@ BEGIN
        SET @responseMessage='Invalid user name'
 
 END
+
+DECLARE @responseMessage NVARCHAR(250)
+EXEC dbo.uspAddUser @pUserName = N'songtx33', 
+    @pPassword = N'SuperSafe',
+    @pFirstName = N'Tianxin', 
+    @pLastName = N'Song',
+	@pEmailAddress = N'songtx33@gmail.com',
+	@responseMessage=@responseMessage OUTPUT;
+GO
